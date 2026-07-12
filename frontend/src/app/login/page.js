@@ -1,9 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { supabase } from "../lib/supabase";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+    const router = useRouter();
+    async function handleGoogleLogin() {
 
+    const { error } = await supabase.auth.signInWithOAuth({
+
+      provider: "google",
+
+      options: {
+
+        redirectTo: `${window.location.origin}/dashboard`
+
+      }
+
+    });
+
+    if (error) {
+
+      alert(error.message);
+
+    }
+
+  }
   return (
 
     <main className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 flex justify-center items-center">
@@ -60,6 +83,41 @@ export default function LoginPage() {
             className="w-full bg-blue-600 text-white py-4 rounded-xl mt-8"
           >
             Login
+          </button>
+          <div className="flex items-center my-6">
+
+            <hr className="flex-1 border-gray-300" />
+
+            <span className="mx-3 text-gray-500 text-sm">
+
+              OR
+
+            </span>
+
+            <hr className="flex-1 border-gray-300" />
+
+          </div>
+
+          <button
+
+            onClick={handleGoogleLogin}
+
+           className="w-full border border-gray-300 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition"
+
+         >
+
+           <img
+
+             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+
+              alt="Google"
+
+              className="w-6 h-6"
+
+           />
+
+            Continue with Google
+
           </button>
 
           <p className="text-center mt-8">
