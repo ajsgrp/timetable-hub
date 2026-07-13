@@ -1,32 +1,50 @@
 "use client";
 
+import { useState } from "react"; 
 import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const router = useRouter();
-    async function handleGoogleLogin() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    async function handleEmailLogin() {
 
-    const { error } = await supabase.auth.signInWithOAuth({
-
-      provider: "google",
-
-      options: {
-
-        redirectTo: `${window.location.origin}/dashboard`
-
+      if (!email || !password) {
+        alert("Please enter your email and password.");
+        return;
       }
 
-    });
+      setLoading(true);
 
-    if (error) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
-      alert(error.message);
+      setLoading(false);
 
+        if (error) {
+        alert(error.message);
+        return;
+      }
+
+      router.push("/dashboard");
     }
 
-  }
+    async function handleGoogleLogin() {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${window.location.origin}/dashboard` },
+        });
+        if (error) throw error;
+      } catch (err) {
+        alert(err.message ?? String(err));
+      }
+    }
   return (
 
     <main className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 flex justify-center items-center">
@@ -48,6 +66,8 @@ export default function LoginPage() {
           <input
             type="email"
             placeholder="Enter Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full border rounded-xl p-4 mt-2 mb-5"
           />
 
@@ -56,6 +76,8 @@ export default function LoginPage() {
           <input
             type="password"
             placeholder="Enter Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full border rounded-xl p-4 mt-2"
           />
 
@@ -78,11 +100,12 @@ export default function LoginPage() {
 
           </div>
           
-          <Link href="/login"></Link>
           <button
-            className="w-full bg-blue-600 text-white py-4 rounded-xl mt-8"
+            onClick={handleEmailLogin}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-4 rounded-xl mt-8 hover:bg-blue-700 disabled:bg-gray-400"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
           <div className="flex items-center my-6">
 
@@ -99,25 +122,15 @@ export default function LoginPage() {
           </div>
 
           <button
-
             onClick={handleGoogleLogin}
-
-           className="w-full border border-gray-300 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition"
-
-         >
-
-           <img
-
-             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-
+            className="w-full border border-gray-300 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition"
+          >
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
               alt="Google"
-
               className="w-6 h-6"
-
-           />
-
+            />
             Continue with Google
-
           </button>
 
           <p className="text-center mt-8">
