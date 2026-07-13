@@ -123,21 +123,39 @@ export default function Timeline() {
 
     <>
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="bg-white rounded-2xl shadow-md p-5 mb-6">
 
-           <h2 className="text-2xl font-bold">
-                ⏰ 24 Hour Timeline
-           </h2>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
 
-            <div className="text-blue-700 font-bold text-lg">
+          <div>
 
-                   📅 {selectedDate.toDateString()}
+            <h2 className="text-3xl font-bold text-gray-800">
+              ⏰ Daily Timeline
+            </h2>
 
-            </div>
+            <p className="text-gray-500 mt-1">
+              Plan your day with smart scheduling.
+            </p>
+
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3">
+
+            <p className="text-sm text-gray-500">
+              Selected Date
+            </p>
+
+            <h3 className="text-xl font-bold text-blue-700">
+              {selectedDate.toDateString()}
+            </h3>
+
+          </div>
 
         </div>
 
-        <div className="space-y-5">
+      </div>
+
+        <div className="bg-white rounded-2xl shadow-md p-5 space-y-4">
 
           {Array.from({ length: 24 }).map((_, hour) => {
 
@@ -160,7 +178,7 @@ export default function Timeline() {
 
               <div
                 key={hour}
-                className="flex gap-5 border-b pb-5"
+                className="flex flex-col md:flex-row gap-4 border-b border-gray-200 py-4"
               >
 
                 <div className="w-20 font-bold text-blue-700 pt-3">
@@ -174,7 +192,8 @@ export default function Timeline() {
 
                     <div
                       onClick={() => openModal(hour)}
-                      className="border-2 border-dashed rounded-xl p-4 text-center text-gray-400 cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition"
+                       className="border-2 border-dashed border-blue-300 rounded-xl p-5 text-center text-gray-400 cursor-pointer hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-all duration-300 rounded-2xl"
+                      
                     >
                       + Click to Add Task
                     </div>
@@ -255,6 +274,9 @@ export default function Timeline() {
         onSave={saveTask}
         defaultStartTime={startTime}
         defaultEndTime={endTime}
+         editingTask={
+           editingIndex !== null ? tasks[editingIndex] : null
+        }
       />
 
     </>
