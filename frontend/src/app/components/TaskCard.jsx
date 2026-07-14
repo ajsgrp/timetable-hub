@@ -6,29 +6,34 @@ export default function TaskCard({
   onDelete,
 }) {
   return (
-    <div className="bg-blue-100 border-l-4 border-blue-600 rounded-xl p-4 shadow-sm">
+    <div
+      className="rounded-2xl p-5 shadow-xl text-white transition-all duration-300 hover:scale-[1.02]"
+      style={{
+        backgroundColor: task.color || "#2563eb",
+      }}
+   >
 
       <div className="flex justify-between items-start">
 
         <div>
 
-          <h3 className="font-bold text-lg text-blue-900">
+          <h3 className="text-xl font-bold">
             {task.taskName}
           </h3>
 
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-white/90 text-sm mt-2">
             {task.startTime} - {task.endTime}
           </p>
 
         </div>
 
-        <span className="text-xs bg-white px-3 py-1 rounded-full">
+        <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm">
           {task.priority}
         </span>
 
       </div>
 
-      <p className="text-gray-700 mt-3">
+      <p className="text-white/90 mt-4">
         {task.description}
       </p>
 
@@ -36,14 +41,14 @@ export default function TaskCard({
 
         <button
           onClick={onEdit}
-          className="px-3 py-2 bg-yellow-400 rounded-lg text-sm"
+          className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition"
         >
           ✏ Edit
         </button>
 
         <button
           onClick={onDelete}
-          className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm"
+          className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition"
         >
           🗑 Delete
         </button>

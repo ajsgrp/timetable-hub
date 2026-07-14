@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCalendar } from "../../context/CalendarContext";
 import TaskModal from "./TaskModal";
 import TaskCard from "./TaskCard";
@@ -8,62 +8,136 @@ import TaskCard from "./TaskCard";
 export default function Timeline() {
 
   const { selectedDate } = useCalendar();
-  const [showModal, setShowModal] = useState(false);
+
   const [tasks, setTasks] = useState([]);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
   const [editingIndex, setEditingIndex] = useState(null);
 
+  const [defaultStartTime, setDefaultStartTime] =
+    useState("00:00");
+
+  const [defaultEndTime, setDefaultEndTime] =
+    useState("00:30");
+
   useEffect(() => {
-    const saved = localStorage.getItem("tasks");
+
+    const saved =
+      localStorage.getItem("tasks");
 
     if (saved) {
+
       setTasks(JSON.parse(saved));
+
     }
+
   }, []);
 
-  function openModal(hour) {
+  const todayTasks = useMemo(() => {
+
+    const date =
+      selectedDate
+        .toISOString()
+        .split("T")[0];
+
+    return tasks
+
+      .filter(
+        (task) =>
+          task.taskDate === date
+      )
+
+      .sort((a, b) =>
+        a.startTime.localeCompare(
+          b.startTime
+        )
+      );
+
+  }, [tasks, selectedDate]);
+    function openModal(startTime = "00:00") {
 
     setEditingIndex(null);
 
-    setStartTime(
-      `${hour.toString().padStart(2, "0")}:00`
-    );
+    setDefaultStartTime(startTime);
 
-    setEndTime(
-      `${hour.toString().padStart(2, "0")}:30`
-    );
+    const [hour, minute] = startTime
+      .split(":")
+      .map(Number);
+
+    let endHour = hour;
+    let endMinute = minute + 30;
+
+    if (endMinute >= 60) {
+      endHour += 1;
+      endMinute -= 60;
+    }
+
+    const endTime = `${endHour
+      .toString()
+      .padStart(2, "0")}:${endMinute
+      .toString()
+      .padStart(2, "0")}`;
+
+    setDefaultEndTime(endTime);
 
     setShowModal(true);
+  }
+
+  function hasTimeConflict(newTask) {
+
+    return tasks.some((task, index) => {
+
+      // Edit karte waqt apne hi task ko ignore karo
+      if (editingIndex !== null && index === editingIndex) {
+        return false;
+      }
+
+      // Sirf same date ke tasks check karo
+      if (task.taskDate !== newTask.taskDate) {
+        return false;
+      }
+
+      return (
+        newTask.startTime < task.endTime &&
+        newTask.endTime > task.startTime
+      );
+
+    });
 
   }
 
   function saveTask(task) {
 
     let updated = [...tasks];
+      if (hasTimeConflict(task)) {
+
+        alert(
+          "⚠️ This time slot is already occupied.\n\nPlease choose another time."
+        );
+
+        return;
+
+      }
 
     if (editingIndex !== null) {
 
       updated[editingIndex] = {
+        ...updated[editingIndex],
         ...task,
-        completed:
-          updated[editingIndex].completed,
       };
 
     } else {
 
-     updated.push({
-
-      ...task,
-
-      taskDate:
-      selectedDate.toISOString().split("T")[0],
-
-      completed:false,
-
-});
+      updated.push({
+        ...task,
+        completed: false,
+      });
 
     }
+
+    updated.sort((a, b) =>
+      a.startTime.localeCompare(b.startTime)
+    );
 
     setTasks(updated);
 
@@ -73,6 +147,20 @@ export default function Timeline() {
     );
 
     setShowModal(false);
+
+    setEditingIndex(null);
+  }
+
+  function editTask(index) {
+
+    console.log(tasks[index]); // Debug
+
+    setEditingIndex(index);
+
+    setDefaultStartTime(tasks[index].startTime);
+    setDefaultEndTime(tasks[index].endTime);
+
+    setShowModal(true);
 
   }
 
@@ -107,47 +195,39 @@ export default function Timeline() {
 
   }
 
-  function editTask(index) {
-
-    setEditingIndex(index);
-
-    setStartTime(tasks[index].startTime);
-
-    setEndTime(tasks[index].endTime);
-
-    setShowModal(true);
-
-  }
-
-  return (
+  const nextStartTime =
+    todayTasks.length > 0
+      ? todayTasks[todayTasks.length - 1].endTime
+      : "00:00";
+        return (
 
     <>
 
-      <div className="bg-white rounded-2xl shadow-md p-5 mb-6">
+      <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
 
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div className="flex justify-between items-center">
 
           <div>
 
-            <h2 className="text-3xl font-bold text-gray-800">
-              ⏰ Daily Timeline
+            <h2 className="text-3xl font-bold">
+              📅 Daily Schedule
             </h2>
 
-            <p className="text-gray-500 mt-1">
-              Plan your day with smart scheduling.
+            <p className="text-gray-500 mt-2">
+              {selectedDate.toDateString()}
             </p>
 
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3">
+          <div className="text-right">
 
-            <p className="text-sm text-gray-500">
-              Selected Date
-            </p>
-
-            <h3 className="text-xl font-bold text-blue-700">
-              {selectedDate.toDateString()}
+            <h3 className="text-xl font-bold text-blue-600">
+              {todayTasks.length}
             </h3>
+
+            <p className="text-gray-500">
+              Tasks Today
+            </p>
 
           </div>
 
@@ -155,128 +235,108 @@ export default function Timeline() {
 
       </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-5 space-y-4">
+      <div className="space-y-5">
 
-          {Array.from({ length: 24 }).map((_, hour) => {
+        {todayTasks.length === 0 ? (
 
-            const hourString =
-              hour.toString().padStart(2, "0");
+          <div
+            onClick={() => openModal("00:00")}
+            className="border-2 border-dashed border-blue-300 rounded-2xl p-10 text-center cursor-pointer hover:bg-blue-50 transition"
+          >
 
-            const selectedDateString =
-                selectedDate.toISOString().split("T")[0];
+            <h2 className="text-2xl font-bold">
+              ➕ Add First Task
+            </h2>
 
-             const hourTasks = tasks.filter(
-                (task) =>
+            <p className="text-gray-500 mt-3">
+              Start planning your day.
+            </p>
 
-                task.startTime.startsWith(hourString)
+          </div>
 
-                  &&
-                task.taskDate === selectedDateString
+        ) : (
+          <>
+            {todayTasks.map((task) => {
 
-                 );
-            return (
+              const index = tasks.findIndex(
+                (t) =>
+                  t.startTime === task.startTime &&
+                  t.taskDate === task.taskDate &&
+                  t.taskName === task.taskName
+              );
 
-              <div
-                key={hour}
-                className="flex flex-col md:flex-row gap-4 border-b border-gray-200 py-4"
-              >
+              return (
 
-                <div className="w-20 font-bold text-blue-700 pt-3">
+                <div
+                  key={index}
+                  className={`rounded-2xl border ${
+                    task.completed
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 bg-white"
+                  } p-4 shadow-sm`}
+                >
 
-                  {hourString}:00
+                  <TaskCard
+                    task={task}
+                    onEdit={() => editTask(index)}
+                    onDelete={() => deleteTask(index)}
+                  />
 
-                </div>
-
-                <div className="flex-1"></div>
-                     {hourTasks.length === 0 ? (
-
-                    <div
-                      onClick={() => openModal(hour)}
-                       className="border-2 border-dashed border-blue-300 rounded-xl p-5 text-center text-gray-400 cursor-pointer hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-all duration-300 rounded-2xl"
-                      
-                    >
-                      + Click to Add Task
-                    </div>
-
-                  ) : (
-
-                    <div className="space-y-3">
-
-                      {hourTasks.map((task) => {
-
-                        const index = tasks.indexOf(task);
-
-                        return (
-
-                          <div
-                            key={index}
-                            className={`rounded-xl p-3 ${
-                              task.completed
-                                ? "bg-green-100 border border-green-500"
-                                : "bg-white border"
-                            }`}
-                          >
-
-                            <TaskCard
-                              task={task}
-                              onEdit={() => editTask(index)}
-                              onDelete={() => deleteTask(index)}
-                            />
-
-                            <button
-                              onClick={() =>
-                                completeTask(index)
-                              }
-                              className={`mt-3 px-4 py-2 rounded-lg text-white ${
-                                task.completed
-                                  ? "bg-green-600"
-                                  : "bg-blue-600"
-                              }`}
-                            >
-
-                              {task.completed
-                                ? "✔ Completed"
-                                : "Mark Complete"}
-
-                            </button>
-
-                          </div>
-
-                        );
-
-                      })}
-
-                      <button
-                        onClick={() => openModal(hour)}
-                        className="text-blue-600 font-semibold"
-                      >
-                        + Add Another Task
-                      </button>
-
-                    </div>
-
-                  )}
+                  <button
+                    onClick={() => completeTask(index)}
+                    className={`mt-4 px-5 py-2 rounded-lg text-white ${
+                      task.completed
+                        ? "bg-green-600"
+                        : "bg-blue-600"
+                    }`}
+                  >
+                    {task.completed
+                      ? "✔ Completed"
+                      : "Mark Complete"}
+                  </button>
 
                 </div>
 
-            );
+              );
 
-          })}
+            })}
 
-        </div>
+            <div
+              onClick={() => openModal(nextStartTime)}
+              className="border-2 border-dashed border-blue-300 rounded-2xl p-8 text-center cursor-pointer hover:bg-blue-50 transition"
+            >
+
+              <h2 className="text-xl font-bold">
+                ➕ Add Next Task
+              </h2>
+
+              <p className="text-gray-500 mt-2">
+                Starts from {nextStartTime}
+              </p>
+
+            </div>
+
+          </>
+
+        )}
+
+      </div>
 
       <TaskModal
         isOpen={showModal}
         onClose={() => {
-          setEditingIndex(null);
-          setShowModal(false);
-        }}
+         setEditingIndex(null);
+         setShowModal(false);
+       }}
         onSave={saveTask}
-        defaultStartTime={startTime}
-        defaultEndTime={endTime}
-         editingTask={
-           editingIndex !== null ? tasks[editingIndex] : null
+        selectedDate={selectedDate}
+        editingTask={
+          editingIndex !== null
+            ? tasks[editingIndex]
+            : null
         }
+        defaultStartTime={defaultStartTime}
+        defaultEndTime={defaultEndTime}
       />
 
     </>
