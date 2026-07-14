@@ -1,5 +1,6 @@
 "use client";
 
+import SplashScreen from "./components/SplashScreen";
 import Link from "next/link";
 import { useState } from "react";
 import Navbar from "./components/Navbar";
@@ -7,9 +8,15 @@ import Navbar from "./components/Navbar";
 export default function Home() {
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   return (
      <>
+       {showSplash && (
+          <SplashScreen
+            onFinish={() => setShowSplash(false)}
+          />
+        )}
     <Navbar />
       {/* Hero Section */}
       <main className="min-h-screen pt-20 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 flex items-center">
@@ -57,7 +64,7 @@ export default function Home() {
 
          <h2 className="text-5xl font-bold text-center">
            Powerful Features
-         </h2>s
+         </h2>
 
          <p className="text-center text-gray-600 mt-4 text-xl">
            Everything you need to manage your time efficiently.
