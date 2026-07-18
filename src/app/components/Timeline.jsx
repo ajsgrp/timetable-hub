@@ -107,7 +107,7 @@ export default function Timeline() {
   }
 
   function saveTask(task) {
-
+    
     let updated = [...tasks];
       if (hasTimeConflict(task)) {
 
@@ -146,6 +146,8 @@ export default function Timeline() {
       JSON.stringify(updated)
     );
 
+    window.dispatchEvent(new Event("tasksUpdated"));
+
     setShowModal(false);
 
     setEditingIndex(null);
@@ -177,6 +179,8 @@ export default function Timeline() {
       JSON.stringify(updated)
     );
 
+    window.dispatchEvent(new Event("tasksUpdated"));
+
   }
 
   function completeTask(index) {
@@ -192,6 +196,8 @@ export default function Timeline() {
       "tasks",
       JSON.stringify(updated)
     );
+
+    window.dispatchEvent(new Event("tasksUpdated"));
 
   }
 

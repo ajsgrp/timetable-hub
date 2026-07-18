@@ -20,12 +20,14 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
 
   const [tasks, setTasks] = useState([]);
+  console.log("Dashboard Tasks:", tasks);
 
   const today = new Date().toISOString().split("T")[0];
+  console.log("Today's Date:", today);
 
-  const todayTasks = tasks.filter(
-    (task) => task.taskDate === today
-  );
+  console.log("Task Date:", tasks[0]?.taskDate);
+
+  const todayTasks = tasks;
 
   const completedTasks = todayTasks.filter(
     (task) => task.completed
@@ -68,6 +70,18 @@ export default function Dashboard() {
   const focusHours = Math.floor(totalFocusMinutes / 60);
 
   const focusMinutes = totalFocusMinutes % 60;
+
+  console.log("========== Dashboard ==========");
+
+  console.log("All Tasks:", tasks);
+
+  console.log("Today's Tasks:", todayTasks);
+
+  console.log("Completed:", completedTasks);
+
+  console.log("Pending:", pendingTasks);
+
+  console.log("Progress:", progress);
 
   const productivity =
     progress >= 90
@@ -126,14 +140,27 @@ export default function Dashboard() {
 
   useEffect(() => {
 
-    const savedTasks =
-      localStorage.getItem("tasks");
+    function loadTasks() {
 
-    if (savedTasks) {
+      const savedTasks = localStorage.getItem("tasks");
 
-      setTasks(JSON.parse(savedTasks));
+      if (savedTasks) {
+        setTasks(JSON.parse(savedTasks));
+      } else {
+        setTasks([]);
+      }
 
     }
+
+    // Page khulte hi load karega
+    loadTasks();
+
+    // Jab task update hoga tab dobara load karega
+    window.addEventListener("tasksUpdated", loadTasks);
+
+    return () => {
+      window.removeEventListener("tasksUpdated", loadTasks);
+    };
 
   }, []);
 
@@ -520,21 +547,54 @@ export default function Dashboard() {
 
             {/* Productivity */}
 
-            <div className="border-t pt-4">
+           <div className="rounded-2xl border border-purple-200 bg-purple-50 p-4 sm:p-5 mt-6 shadow-sm overflow-hidden">
 
-              <div className="flex justify-between">
+            <div className="flex flex-col gap-4">
 
-                <span className="text-gray-600">
+              {/* Top */}
+                <div className="flex items-center gap-3">
 
-                  🔥 Productivity
+                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 text-2xl">
+                   🔥
+                 </div>
 
-                </span>
+                 <div className="min-w-0 flex-1">
+                   <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate">
+                     Productivity
+                   </h3>
 
-                <span className="font-bold text-green-600 break-words">
+                   <p className="text-xs sm:text-sm text-gray-500">
+                     Today's Performance
+                   </p>
+                 </div>
 
-                  {productivity}
+                </div>
 
-                </span>
+               {/* Bottom */}
+               <div className="flex justify-center sm:justify-end">
+
+                 <span
+                   className="
+                     inline-flex
+                     max-w-full
+                     items-center
+                     justify-center
+                     rounded-full
+                     bg-green-100
+                     px-4
+                     py-2
+                     text-center
+                     text-xs
+                     sm:text-sm
+                     font-bold
+                     text-green-700
+                     break-words
+                    "
+                  >
+                   {productivity} 🚀
+                 </span>
+
+                </div>
 
               </div>
 
@@ -542,7 +602,7 @@ export default function Dashboard() {
 
             {/* Today's Date */}
 
-            <div className="border-t pt-4">
+            <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 sm:p-5 mt-6">
 
               <div className="flex justify-between">
 
