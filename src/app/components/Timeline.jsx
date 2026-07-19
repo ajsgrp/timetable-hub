@@ -129,8 +129,9 @@ export default function Timeline() {
     } else {
 
       updated.push({
+        id: crypto.randomUUID(),
         ...task,
-        completed: false,
+       completed: false,
       });
 
     }

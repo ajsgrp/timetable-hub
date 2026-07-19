@@ -269,10 +269,13 @@ export default function Dashboard() {
           </button>
 
           <button
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => {
+              setSidebarOpen(false);
+              router.push("/dashboard/pending");
+            }}
             className="w-full rounded-xl px-4 py-3 text-left hover:bg-blue-600 transition"
           >
-            ✅ Tasks
+            📋 All Task
           </button>
 
           <button
