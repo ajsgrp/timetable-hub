@@ -20,29 +20,33 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
 
   const [tasks, setTasks] = useState([]);
-  console.log("Dashboard Tasks:", tasks);
+   console.log("Dashboard Tasks:", tasks);
+  
+  const [summaryType, setSummaryType] = useState("today");
 
   const today = new Date().toISOString().split("T")[0];
-  console.log("Today's Date:", today);
 
-  console.log("Task Date:", tasks[0]?.taskDate);
+  const summaryTasks =
+    summaryType === "today"
+      ? tasks.filter(
+          (task) => task.taskDate === today
+        )
+      : tasks;
 
-  const todayTasks = tasks;
-
-  const completedTasks = todayTasks.filter(
+  const completedTasks = summaryTasks.filter(
     (task) => task.completed
   );
 
-  const pendingTasks = todayTasks.filter(
+  const pendingTasks = summaryTasks.filter(
     (task) => !task.completed
   );
 
   const progress =
-    todayTasks.length === 0
+    summaryTasks.length === 0
       ? 0
       : Math.round(
           (completedTasks.length /
-            todayTasks.length) *
+            summaryTasks.length) *
             100
         );
 
@@ -52,7 +56,7 @@ export default function Dashboard() {
           a.startTime.localeCompare(b.startTime)
         )[0]
       : null;
-  const totalFocusMinutes = todayTasks.reduce((total, task) => {
+  const totalFocusMinutes = summaryTasks.reduce((total, task) => {
 
     const [startHour, startMinute] =
       task.startTime.split(":").map(Number);
@@ -75,7 +79,7 @@ export default function Dashboard() {
 
   console.log("All Tasks:", tasks);
 
-  console.log("Today's Tasks:", todayTasks);
+  console.log("Summary Tasks:", summaryTasks);
 
   console.log("Completed:", completedTasks);
 
@@ -389,13 +393,43 @@ export default function Dashboard() {
           
           <div className="rounded-2xl bg-white p-6 shadow-md">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
 
-              📊 Today's Summary
+              <h2 className="text-2xl font-bold">
+                📊 {summaryType === "today"
+                  ? "Today's Summary"
+                  : "Overall Summary"}
+              </h2>
 
-            </h2>
+              <div className="grid grid-cols-2 w-full sm:w-auto rounded-xl bg-gray-100 p-1">
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 mb-6">
+                <button
+                  onClick={() => setSummaryType("today")}
+                  className={`rounded-lg py-2 px-3 text-sm sm:text-base transition ${
+                  summaryType === "today"
+                     ? "bg-blue-600 text-white"
+                      : "text-gray-700"
+                  }`}
+               >
+                  Today
+                </button>
+
+                <button
+                  onClick={() => setSummaryType("overall")}
+                  className={`rounded-lg py-2 px-3 text-sm sm:text-base transition ${
+                    summaryType === "overall"
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-700"
+                  }`}
+                >
+                  Overall
+                </button>
+
+              </div>
+
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
               {/* Total */}
 
@@ -409,7 +443,7 @@ export default function Dashboard() {
 
                 <h2 className="mt-2 text-4xl font-bold text-blue-700">
 
-                  {todayTasks.length}
+                  {summaryTasks.length}
 
                 </h2>
 
@@ -455,7 +489,7 @@ export default function Dashboard() {
 
               <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-3 sm:p-5 text-white">
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
 
                   <p className="text-xs sm:text-sm">
 
@@ -486,7 +520,7 @@ export default function Dashboard() {
 
               {/* Next Task */}
 
-              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5 mt-6">
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 mt-4">
 
                 <div className="flex items-center justify-between">
 
@@ -521,7 +555,7 @@ export default function Dashboard() {
               </div>
              {/* Focus Time */}
 
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-5 mt-6">
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 mt-4">
                <div className="flex items-center justify-between">
 
                  <span className="text-gray-600">
@@ -547,7 +581,7 @@ export default function Dashboard() {
 
             {/* Productivity */}
 
-           <div className="rounded-2xl border border-purple-200 bg-purple-50 p-4 sm:p-5 mt-6 shadow-sm overflow-hidden">
+           <div className="rounded-2xl border border-purple-200 bg-purple-50 p-4 mt-4 shadow-sm overflow-hidden">
 
             <div className="flex flex-col gap-4">
 
@@ -602,7 +636,7 @@ export default function Dashboard() {
 
             {/* Today's Date */}
 
-            <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 sm:p-5 mt-6">
+            <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 mt-4">
 
               <div className="flex justify-between">
 

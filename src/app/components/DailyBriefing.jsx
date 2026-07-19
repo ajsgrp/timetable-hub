@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export default function DailyBriefing({
   isOpen,
   onClose,
@@ -7,6 +9,8 @@ export default function DailyBriefing({
   user,
 }) {
 
+  const [summaryType, setSummaryType] = useState("today");
+  
   if (!isOpen) return null;
 
   // ==========================
@@ -15,24 +19,32 @@ export default function DailyBriefing({
 
   const today = new Date().toISOString().split("T")[0];
 
-  const todayTasks = tasks.filter(
-    (task) => task.taskDate === today
-  );
+  const summaryTasks =
+    summaryType === "today"
+      ? tasks.filter(task => task.taskDate === today)
+      : tasks;
 
-  const completedTasks = todayTasks.filter(
+  console.log("All Tasks:", tasks);
+  console.log("Today's Tasks:", summaryTasks);
+
+  const completedTasks = summaryTasks.filter(
     (task) => task.completed
   );
 
-  const pendingTasks = todayTasks.filter(
+  const pendingTasks = summaryTasks.filter(
     (task) => !task.completed
   );
 
   const progress =
-    todayTasks.length === 0
+    summaryTasks.length === 0
       ? 0
       : Math.round(
-          (completedTasks.length / todayTasks.length) * 100
+          (completedTasks.length / summaryTasks.length) * 100
         );
+   console.log("DailyBriefing Tasks:", tasks);
+   console.log("Today:", today);
+   console.log("Today Tasks:", summaryTasks);
+   console.log("All Tasks:", tasks);
 
   const nextTask = pendingTasks
     .sort((a, b) => a.startTime.localeCompare(b.startTime))[0];
@@ -41,21 +53,21 @@ export default function DailyBriefing({
 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
 
-      <div className="w-full max-w-xl rounded-3xl overflow-hidden bg-white shadow-2xl">
+      <div className="w-full max-w-2xl max-h-[95vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
 
         {/* Header */}
 
-        <div className="bg-blue-600 text-white p-6">
+        <div className="bg-blue-600 text-white p-4 sm:p-6">
 
           <div className="flex justify-between items-start">
 
             <div>
 
-              <h2 className="text-3xl font-bold">
+              <h2 className="text-2xl sm:text-3xl font-bold">
                 🌅 Good Morning
               </h2>
 
-              <p className="mt-2 text-blue-100">
+              <p className="mt-2 text-sm sm:text-base text-blue-100">
                 Welcome back,
                 {" "}
                 {user?.user_metadata?.full_name || "User"}
@@ -77,111 +89,71 @@ export default function DailyBriefing({
         {/* Body */}
 
         <div className="p-6 space-y-6">
-
-          {/* Progress */}
-
-          <div>
-
-            <div className="flex justify-between mb-2">
-
-              <h3 className="font-bold text-lg">
-                Today's Progress
-              </h3>
-
-              <span className="font-bold text-blue-700">
-                {progress}%
-              </span>
-
+          <div className="flex justify-center mb-5">
+            <div className="flex w-full sm:w-auto bg-gray-100 rounded-xl p-1">
+              <button
+                onClick={() => setSummaryType("today")}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-semibold transition ${
+                  summaryType === "today" ? "bg-blue-600 text-white" : "text-gray-700"
+                }`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setSummaryType("overall")}
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-semibold transition ${
+                  summaryType === "overall" ? "bg-blue-600 text-white" : "text-gray-700"
+                }`}
+              >
+                Overall
+              </button>
             </div>
-
-            <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-
-              <div
-                className="h-full bg-blue-600"
-                style={{
-                  width: `${progress}%`,
-                }}
-              />
-
-            </div>
-
           </div>
 
-          {/* Stats */}
+          <div className="flex justify-between mb-2">
+            <h3 className="font-bold text-base sm:text-lg">Today's Progress</h3>
+            <span className="font-bold text-blue-700">{progress}%</span>
+          </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-600" style={{ width: `${progress}%` }} />
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="rounded-xl bg-blue-50 p-4 text-center">
-
-              <h3 className="text-3xl font-bold text-blue-700">
-                {todayTasks.length}
-              </h3>
-
+              <h3 className="text-2xl sm:text-3xl font-bold text-blue-700">{summaryTasks.length}</h3>
               <p>Total</p>
-
             </div>
-
             <div className="rounded-xl bg-green-50 p-4 text-center">
-
-              <h3 className="text-3xl font-bold text-green-700">
-                {completedTasks.length}
-              </h3>
-
+              <h3 className="text-2xl sm:text-3xl font-bold text-green-700">{completedTasks.length}</h3>
               <p>Completed</p>
-
             </div>
-
             <div className="rounded-xl bg-orange-50 p-4 text-center">
-
-              <h3 className="text-3xl font-bold text-orange-700">
-                {pendingTasks.length}
-              </h3>
-
+              <h3 className="text-2xl sm:text-3xl font-bold text-orange-700">{pendingTasks.length}</h3>
               <p>Pending</p>
-
             </div>
-
           </div>
 
-          {/* Next Task */}
-
-          <div className="rounded-2xl border p-5">
-
-            <h3 className="font-bold text-xl mb-3">
-              ⏰ Next Task
-            </h3>
-
+          <div className="rounded-2xl border p-4 sm:p-5">
+            <h3 className="font-bold text-lg sm:text-xl mb-3">⏰ Next Task</h3>
             {nextTask ? (
-
-              <>
-
-                <p className="font-semibold text-lg">
-                  {nextTask.taskName}
-                </p>
-
+              <div>
+                <p className="font-semibold text-base sm:text-lg break-words">{nextTask.taskName}</p>
                 <p className="text-gray-500 mt-1">
                   {nextTask.startTime} - {nextTask.endTime}
                 </p>
-
-              </>
-
+              </div>
             ) : (
-
-              <p className="text-gray-500">
-                🎉 No pending tasks today.
-              </p>
-
+              <p className="text-gray-500">🎉 No pending tasks today.</p>
             )}
-
           </div>
 
           <button
             onClick={onClose}
-            className="w-full rounded-2xl bg-blue-600 py-4 text-white font-bold hover:bg-blue-700 transition"
+            className="w-full rounded-2xl bg-blue-600 py-3 sm:py-4 text-white font-bold text-sm sm:text-base hover:bg-blue-700 transition"
           >
             Continue Working →
           </button>
-
         </div>
 
       </div>
